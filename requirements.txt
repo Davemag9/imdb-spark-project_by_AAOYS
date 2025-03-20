@@ -1,2 +1,2 @@
-pyspark~=3.5.5
-pyspark-stubs~=3.0.0.post3
+py4j==0.10.9.7
+pyspark==3.5.5
