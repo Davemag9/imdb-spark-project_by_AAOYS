@@ -12,10 +12,10 @@ df_title_ratings = spark.read.option("header", "true").option("sep", "\t").csv("
 df_title_ratings.printSchema()
 df_title_ratings.show(10)
 
-df_name_basics = spark.read.option("header", "true").option("sep", "\t").csv("imbd_dataset/name.basics.tsv")
+df_name_basics = spark.read.option("header", "true").option("sep", "\t").csv("imdb_dataset/name.basics.tsv")
 df_name_basics.printSchema()
 df_name_basics.show(5)
-df_title_akas = spark.read.option("header", "true").option("sep", "\t").csv("imbd_dataset/title.akas.tsv")
+df_title_akas = spark.read.option("header", "true").option("sep", "\t").csv("imdb_dataset/title.akas.tsv")
 df_title_akas.printSchema()
 df_title_akas.show(5)
 
