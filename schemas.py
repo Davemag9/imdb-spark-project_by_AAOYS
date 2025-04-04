@@ -53,3 +53,12 @@ title_principals_schema = StructType([
     StructField("job", StringType(), True), 
     StructField("characters", StringType(), True)
 ])
+
+name_basics_schema = StructType([
+    StructField("nconst", StringType(), False),
+    StructField("primaryName", StringType(), True),
+    StructField("birthYear", IntegerType(), True),
+    StructField("deathYear", IntegerType(), True),
+    StructField("primaryProfession", StringType(), True),
+    StructField("knownForTitles", StringType(), True)
+])
