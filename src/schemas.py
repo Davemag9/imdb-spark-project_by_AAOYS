@@ -20,8 +20,8 @@ title_akas_schema = StructType([
     StructField("title", StringType(), True),
     StructField("region", StringType(), True),
     StructField("language", StringType(), True),
-    StructField("types", StringType(), True),       # буде строка з комами → можна потім розбити
-    StructField("attributes", StringType(), True),  # те ж саме
+    StructField("types", StringType(), True),
+    StructField("attributes", StringType(), True),
     StructField("isOriginalTitle", StringType(), True)
 ])
 
