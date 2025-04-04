@@ -3,8 +3,8 @@ from pyspark.sql.functions import split
 
 from src.business_cases import get_directors_worked_with_Hanks
 from src.data_loader import load_data
-from src.get_services import get_id_by_name, get_films_by_actor
-from src.schemas import title_episode_schema, title_ratings_schema, title_akas_schema, title_crew_schema, title_basics_schema, title_principals_schema,  name_basics_schema
+from src.schemas import title_episode_schema, title_ratings_schema, title_akas_schema, title_crew_schema, \
+    title_basics_schema, title_principals_schema, name_basics_schema
 
 spark = SparkSession.builder \
     .appName("MyApp") \

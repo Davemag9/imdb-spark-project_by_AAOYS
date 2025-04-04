@@ -8,6 +8,7 @@ def get_directors_worked_with_Hanks(name_basics_df, title_principals_df, title_b
     Get the directors that worked with Tom Hanks
     """
     tom_hanks_id = get_id_by_name("Tom Hanks", name_basics_df)
+
     tom_hanks_titles = get_films_by_actor(tom_hanks_id, title_principals_df, title_basics_df)
 
     tom_hanks_directors = tom_hanks_titles.join(title_crew_df, "tconst") \
