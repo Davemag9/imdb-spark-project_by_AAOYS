@@ -30,3 +30,26 @@ title_crew_schema = StructType([
     StructField("directors", StringType(), True),
     StructField("writers", StringType(), True)
 ])
+
+
+title_basics_schema = StructType([
+    StructField("tconst", StringType(), False),
+    StructField("titleType", StringType(), True),
+    StructField("primaryTitle", StringType(), True),
+    StructField("originalTitle", StringType(), True),
+    StructField("isAdult", BooleanType(), True),
+    StructField("startYear", IntegerType(), True),
+    StructField("endYear", IntegerType(), True),
+    StructField("runtimeMinutes", IntegerType(), True),
+    StructField("genres", StringType(), True)
+])
+
+
+title_principals_schema = StructType([
+    StructField("tconst", StringType(), False),
+    StructField("ordering", IntegerType(), False),
+    StructField("nconst", StringType(), False),
+    StructField("category", StringType(), True),   
+    StructField("job", StringType(), True), 
+    StructField("characters", StringType(), True)
+])
