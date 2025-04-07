@@ -14,3 +14,7 @@ def get_films_by_actor(actor_id: str, title_principals_df, title_basics_df):
 
     films = films.dropDuplicates(["tconst"])
     return films
+
+def get_movies_list(title_basics_df):
+    movies = title_basics_df.filter(col("titleType") == "movie").select("tconst")
+    return movies

@@ -1,7 +1,7 @@
 from pyspark.sql.functions import explode, count, col
 from pyspark.sql import functions as F
 
-from src.get_services import get_id_by_name, get_films_by_actor
+from src.get_services import get_id_by_name, get_films_by_actor, get_movies_list
 
 
 def get_directors_worked_with_Hanks(name_basics_df, title_principals_df, title_basics_df, title_crew_df):
@@ -40,7 +40,7 @@ def get_top_rated_recent_films(title_basics_df, title_ratings_df):
 
 
 def get_most_common_actor_pairs(title_principals_df, title_basics_df, name_basics_df):
-    movies = title_basics_df.filter(col("titleType") == "movie").select("tconst")
+    movies = get_movies_list(title_basics_df)
 
     actors = title_principals_df \
         .filter((col("category").isin("actor", "actress")) & (col("characters").isNotNull())) \
