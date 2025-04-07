@@ -1,13 +1,10 @@
-from pyspark.sql.functions import explode, count, col
-from pyspark.sql import functions as F
+from pyspark.sql.functions import explode, count, col, row_number, split
+from pyspark.sql import functions as F, Window
 
-from src.get_services import get_id_by_name, get_films_by_actor, get_movies_list
+from src.get_services import get_id_by_name, get_films_by_actor, get_movies_list, get_movies_after_year
 
 
 def get_directors_worked_with_Hanks(name_basics_df, title_principals_df, title_basics_df, title_crew_df):
-    """
-    Get the directors that worked with Tom Hanks
-    """
     tom_hanks_id = get_id_by_name("Tom Hanks", name_basics_df)
 
     tom_hanks_titles = get_films_by_actor(tom_hanks_id, title_principals_df, title_basics_df)
@@ -72,3 +69,60 @@ def get_most_common_actor_pairs(title_principals_df, title_basics_df, name_basic
 
     pair_with_names.show(10, truncate=False)
     return pair_with_names
+
+
+
+def get_top_lead_actors_after_2000(title_principals_df, title_basics_df, name_basics_df):
+    movies_after_2000 = get_movies_after_year(2000, title_basics_df)
+
+    lead_roles = title_principals_df \
+        .filter(col("category").isin("actor", "actress")) \
+        .filter(col("ordering") == 1) \
+        .join(movies_after_2000, "tconst") \
+        .groupBy("nconst") \
+        .agg(count("*").alias("lead_roles_count"))
+
+    result = lead_roles \
+        .join(name_basics_df, "nconst") \
+        .select("primaryName", "lead_roles_count") \
+        .orderBy(col("lead_roles_count").desc())
+
+    result.show(10, truncate=False)
+    return result
+
+
+def get_top_3_movies_per_year(title_basics_df, ratings_df):
+    movies_with_ratings = title_basics_df \
+        .filter(col("titleType") == "movie") \
+        .join(ratings_df, "tconst") \
+        .filter(col("startYear").isNotNull())
+
+    window_spec = Window.partitionBy("startYear").orderBy(col("averageRating").desc())
+
+    ranked = movies_with_ratings.withColumn("rank", row_number().over(window_spec))
+
+    top_3_per_year = ranked.filter(col("rank") <= 3) \
+        .select("startYear", "primaryTitle", "averageRating") \
+        .orderBy(col("startYear").desc(), col("averageRating").desc())
+
+    top_3_per_year.show(100, truncate=False)
+    return top_3_per_year
+
+
+def get_most_productive_writers(title_basics_df, title_crew_df, name_basics_df):
+    movies = get_movies_list(title_basics_df)
+
+    writers = title_crew_df.join(movies, "tconst") \
+        .withColumn("writer_id", explode(col("writers"))) \
+        .select("writer_id")
+
+    writer_counts = writers.groupBy("writer_id") \
+        .agg(count("*").alias("num_movies")) \
+        .orderBy(col("num_movies").desc())
+
+    writer_names = writer_counts.join(name_basics_df, writer_counts.writer_id == name_basics_df.nconst) \
+        .select(col("primaryName").alias("Writer"), "num_movies") \
+        .orderBy(col("num_movies").desc())
+
+    writer_names.show(10, truncate=False)
+    return writer_names
