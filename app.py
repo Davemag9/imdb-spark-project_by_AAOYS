@@ -3,7 +3,7 @@ from pyspark.sql.functions import split
 
 from src.business_cases import get_directors_worked_with_Hanks, get_top_rated_recent_films, get_most_common_actor_pairs, \
     get_top_lead_actors_after_2000, get_top_3_movies_per_year, get_most_productive_writers, get_long_high_rated_movies, get_successful_directors, \
-get_avg_runtime_by_genre, count_good_movies_by_year, get_coactors_with_dicaprio, get_bottom_3_by_year, get_actors_with_strong_debut
+get_avg_runtime_by_genre, count_good_movies_by_year, get_coactors_with_dicaprio, get_bottom_3_by_year, get_actors_with_strong_debut, find_man_in_characters, count_films_per_person, add_total_principals_count, rank_principals_in_film, find_films_without_writers, count_films_with_without_directors, count_entries_per_film
 from src.data_loader import load_data
 from src.schemas import title_episode_schema, title_ratings_schema, title_akas_schema, title_crew_schema, \
     title_basics_schema, title_principals_schema, name_basics_schema
@@ -49,3 +49,10 @@ title_crew_df = title_crew_df.withColumn("writers", split(title_crew_df["writers
 # get_most_productive_writers(title_basics_df, title_crew_df, name_basics_df) # 2m
 
 #YURA
+# find_man_in_characters(title_principals_df)
+# count_films_per_person(title_principals_df)
+# add_total_principals_count(title_principals_df)
+# rank_principals_in_film(title_principals_df)
+# find_films_without_writers(title_principals_df)
+# count_films_with_without_directors(title_principals_df)
+# count_entries_per_film(title_principals_df)
