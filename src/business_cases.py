@@ -1,4 +1,4 @@
-from pyspark.sql.functions import explode, count, col, row_number, split
+from pyspark.sql.functions import explode, count, col, row_number, split, avg
 from pyspark.sql import functions as F, Window
 
 from src.get_services import get_id_by_name, get_films_by_actor, get_movies_list, get_movies_after_year
@@ -126,3 +126,104 @@ def get_most_productive_writers(title_basics_df, title_crew_df, name_basics_df):
 
     writer_names.show(10, truncate=False)
     return writer_names
+
+
+def get_long_high_rated_movies(title_basics_df, title_ratings_df):
+    result = title_basics_df.join(title_ratings_df, "tconst") \
+        .filter((col("titleType") == "movie") &
+                (col("runtimeMinutes") > 120) &
+                (col("startYear") > 2015) &
+                (col("averageRating") >= 7.5)) \
+        .select("primaryTitle", "startYear", "runtimeMinutes", "averageRating") \
+        .orderBy(col("averageRating").desc())
+
+    result.show(30, truncate=False)
+    return result
+
+
+def get_successful_directors(name_basics_df, title_basics_df, title_ratings_df, title_crew_df):
+    high_rated = title_basics_df.join(title_ratings_df, "tconst") \
+        .filter((col("startYear") > 2010) & (col("averageRating") > 8)) \
+        .select("tconst")
+
+    director_ids = high_rated.join(title_crew_df, "tconst") \
+        .withColumn("director_id", explode(col("directors"))) \
+        .select("director_id").distinct()
+
+    result = director_ids.join(name_basics_df, col("director_id") == col("nconst")) \
+        .select("primaryName").distinct()
+
+    result.show(10, truncate=False)
+    return result
+
+
+def get_avg_runtime_by_genre(title_basics_df):
+    result = title_basics_df \
+        .filter((col("titleType") == "movie") & (col("runtimeMinutes").isNotNull())) \
+        .withColumn("genre", explode(split(col("genres"), ","))) \
+        .groupBy("genre") \
+        .agg(avg(col("runtimeMinutes")).alias("avg_runtime")) \
+        .orderBy(col("avg_runtime").desc())
+
+    result.show(truncate=False)
+    return result
+
+
+def count_good_movies_by_year(title_basics_df, title_ratings_df):
+    result = title_basics_df.join(title_ratings_df, "tconst") \
+        .filter((col("startYear") >= 2000) & (col("averageRating") > 7) & (col("titleType") == "movie")) \
+        .groupBy("startYear") \
+        .count() \
+        .orderBy("startYear")
+
+    result.show(truncate=False)
+    return result
+
+
+def get_coactors_with_dicaprio(name_basics_df, title_principals_df, title_basics_df):
+    leo_id = get_id_by_name("Leonardo DiCaprio", name_basics_df)
+    leo_movies = get_films_by_actor(leo_id, title_principals_df, title_basics_df)
+
+    coactors = title_principals_df.join(leo_movies, "tconst") \
+        .filter(col("nconst") != leo_id) \
+        .join(name_basics_df, "nconst") \
+        .select("primaryName").distinct()
+
+    coactors.show(20, truncate=False)
+    return coactors
+
+
+def get_bottom_3_by_year(title_basics_df, title_ratings_df):
+    window_spec = Window.partitionBy("startYear").orderBy("numVotes")
+
+    rated_movies = title_basics_df.join(title_ratings_df, "tconst") \
+        .filter((col("averageRating") > 7) &
+                (col("titleType") == "movie") &
+                (col("startYear").isNotNull()))
+
+    result = rated_movies.withColumn("rank", row_number().over(window_spec)) \
+        .filter(col("rank") <= 3) \
+        .select("startYear", "primaryTitle", "averageRating", "numVotes") \
+        .orderBy("startYear", "rank")
+
+    result.show(50, truncate=False)
+    return result
+
+def get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df):
+    actors = title_principals_df \
+        .filter(col("category").isin("actor", "actress")) \
+        .join(title_basics_df, "tconst") \
+        .join(title_ratings_df, "tconst") \
+        .filter(col("titleType") == "movie") \
+        .filter(col("startYear").isNotNull())
+
+    window_spec = Window.partitionBy("nconst").orderBy("startYear")
+
+    debut = actors.withColumn("row", row_number().over(window_spec)) \
+        .filter(col("row") == 1) \
+        .join(name_basics_df, "nconst") \
+        .select("primaryName", "primaryTitle", "startYear", "averageRating") \
+        .orderBy(col("averageRating").desc())
+
+    debut.show(50, truncate=False)
+    return debut

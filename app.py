@@ -2,7 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import split
 
 from src.business_cases import get_directors_worked_with_Hanks, get_top_rated_recent_films, get_most_common_actor_pairs, \
-    get_top_lead_actors_after_2000, get_top_3_movies_per_year, get_most_productive_writers
+    get_top_lead_actors_after_2000, get_top_3_movies_per_year, get_most_productive_writers, get_long_high_rated_movies, get_successful_directors, \
+get_avg_runtime_by_genre, count_good_movies_by_year, get_coactors_with_dicaprio, get_bottom_3_by_year, get_actors_with_strong_debut
 from src.data_loader import load_data
 from src.schemas import title_episode_schema, title_ratings_schema, title_akas_schema, title_crew_schema, \
     title_basics_schema, title_principals_schema, name_basics_schema
@@ -30,8 +31,12 @@ title_crew_df = title_crew_df.withColumn("writers", split(title_crew_df["writers
 
 # business cases
 #ALINA
-
-
+# get_long_high_rated_movies(title_basics_df, title_ratings_df)
+# get_successful_directors(name_basics_df, title_basics_df, title_ratings_df, title_crew_df)
+# get_avg_runtime_by_genre(title_basics_df)
+# count_good_movies_by_year(title_basics_df, title_ratings_df)
+# get_bottom_3_by_year(title_basics_df, title_ratings_df)
+# get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df)
 #ANASTASIA
 
 
