@@ -106,7 +106,7 @@ def get_top_3_movies_per_year(title_basics_df, ratings_df):
         .select("startYear", "primaryTitle", "averageRating") \
         .orderBy(col("startYear").desc(), col("averageRating").desc())
 
-    top_3_per_year.show(100, truncate=False)
+    top_3_per_year.show(10, truncate=False)
     return top_3_per_year
 
 

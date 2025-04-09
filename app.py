@@ -7,7 +7,7 @@ from src.business_cases import get_directors_worked_with_Hanks, get_episodes_sum
     get_top_3_movies_per_year, get_most_productive_writers, get_long_high_rated_movies, get_successful_directors, get_avg_runtime_by_genre, \
     count_good_movies_by_year, get_coactors_with_dicaprio, get_bottom_3_by_year, get_actors_with_strong_debut, find_man_in_characters, \
     count_films_per_person, add_total_principals_count, rank_principals_in_film, find_films_without_writers, count_films_with_without_directors, count_entries_per_film
-from src.data_loader import load_data
+from src.data_loader import load_data, clear_all_cache, write_data_to_csv
 from src.schemas import title_episode_schema, title_ratings_schema, title_akas_schema, title_crew_schema, \
     title_basics_schema, title_principals_schema, name_basics_schema, country_codes_schema
 
@@ -56,12 +56,12 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 # get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df)
                                          
 #OLEH
-# get_directors_worked_with_Hanks(name_basics_df, title_principals_df, title_basics_df, title_crew_df) # 2m
-# get_top_rated_recent_films(title_basics_df, title_ratings_df) # 1m
-# get_most_common_actor_pairs(title_principals_df, title_basics_df, name_basics_df) # 6m
-# get_top_lead_actors_after_2000(title_principals_df, title_basics_df, name_basics_df) # 1m
-# get_top_3_movies_per_year(title_basics_df, title_ratings_df) # 1m
-# get_most_productive_writers(title_basics_df, title_crew_df, name_basics_df) # 2m
+# directors_worked_with_Hanks_df = get_directors_worked_with_Hanks(name_basics_df, title_principals_df, title_basics_df, title_crew_df) # 2m
+# top_rated_recent_films_df = get_top_rated_recent_films(title_basics_df, title_ratings_df) # 1m
+# most_common_actor_pairs_df = get_most_common_actor_pairs(title_principals_df, title_basics_df, name_basics_df) # 6m
+# top_lead_actors_after_2000_df = get_top_lead_actors_after_2000(title_principals_df, title_basics_df, name_basics_df) # 1m
+# top_3_movies_per_year_df = get_top_3_movies_per_year(title_basics_df, title_ratings_df) # 1m
+# most_productive_writers_df = get_most_productive_writers(title_basics_df, title_crew_df, name_basics_df) # 2m
 
 #YURA
 # find_man_in_characters(title_principals_df)
@@ -72,8 +72,19 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 # count_films_with_without_directors(title_principals_df)
 # count_entries_per_film(title_principals_df)
 
-# clean up
-# spark.sql("CLEAR CACHE")
-# spark.catalog.clearCache()
-# spark.sparkContext.setCheckpointDir("")
-spark.stop()
+# write data to csv
+#ALINA
+
+#ANASTASIA
+
+#OLEH
+# write_data_to_csv(directors_worked_with_Hanks_df, "./results/directors_worked_with_Hanks.csv")
+# write_data_to_csv(top_rated_recent_films_df, "./results/top_rated_recent_films.csv")
+# write_data_to_csv(most_common_actor_pairs_df, "./results/most_common_actor_pairs.csv")
+# write_data_to_csv(top_lead_actors_after_2000_df, "./results/top_lead_actors_after_2000.csv")
+# write_data_to_csv(top_3_movies_per_year_df, "./results/top_3_movies_per_year.csv")
+# write_data_to_csv(most_productive_writers_df, "./results/most_productive_writers.csv")
+
+#YURA
+
+clear_all_cache(spark)
