@@ -1,8 +1,7 @@
-from pyspark.sql.functions import explode, count, col, row_number, split, avg
+from datetime import datetime
 from pyspark.sql import functions as F, Window
-
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, lower, count, rank
+from pyspark.sql.functions import explode, count, col, row_number, avg, lower, rank
 from src.get_services import get_id_by_name, get_films_by_actor, get_movies_list, get_movies_after_year
 
 
@@ -162,7 +161,7 @@ def get_successful_directors(name_basics_df, title_basics_df, title_ratings_df, 
 def get_avg_runtime_by_genre(title_basics_df):
     result = title_basics_df \
         .filter((col("titleType") == "movie") & (col("runtimeMinutes").isNotNull())) \
-        .withColumn("genre", explode(split(col("genres"), ","))) \
+        .withColumn("genre", explode(col("genres"))) \
         .groupBy("genre") \
         .agg(avg(col("runtimeMinutes")).alias("avg_runtime")) \
         .orderBy(col("avg_runtime").desc())
@@ -211,6 +210,7 @@ def get_bottom_3_by_year(title_basics_df, title_ratings_df):
     result.show(50, truncate=False)
     return result
 
+
 def get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df):
     actors = title_principals_df \
         .filter(col("category").isin("actor", "actress")) \
@@ -230,6 +230,139 @@ def get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basi
     debut.show(50, truncate=False)
     return debut
 
+def get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df):
+    current_year = datetime.now().year
+    year_threshold = current_year - 10
+    rated_movies_last_10_years = title_basics_df \
+        .filter((col("titleType") == "movie") & (col("startYear") >= year_threshold)) \
+        .join(title_ratings_df, "tconst")
+
+    avg_rating_per_genre = rated_movies_last_10_years \
+        .withColumn("genre", explode(col("genres"))) \
+        .filter((col("genre").isNotNull()) & (col("genre") != "\\N")) \
+        .groupBy("genre") \
+        .agg(avg("averageRating").alias("avg_rating")) \
+        .orderBy(col("avg_rating").desc())
+    
+    avg_rating_per_genre.show(20, truncate=False)
+    return avg_rating_per_genre
+
+def get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, title_ratings_df, country_codes_df):
+    movies = get_movies_list(title_basics_df)
+    high_rated_movies = title_ratings_df.filter(col("averageRating") > 7.0).join(movies, "tconst")
+    
+    movies_with_region = high_rated_movies \
+        .join(title_akas_df, high_rated_movies["tconst"] == title_akas_df["titleId"]) \
+        .filter((col("region").isNotNull()) & (col("region") != "\\N"))
+
+    country_stats = movies_with_region \
+        .groupBy("region") \
+        .agg(
+            count("*").alias("movie_count"),
+            avg("averageRating").alias("average_rating")
+        )
+
+    result = country_stats \
+        .join(country_codes_df, country_stats.region == country_codes_df.alpha_2, how="left") \
+        .select(
+            col("region"),
+            col("name").alias("country_name"),
+            col("movie_count"),
+            col("average_rating")
+        ) \
+        .orderBy(col("movie_count").desc())
+    
+    result.show(truncate=False)
+    return result
+
+
+def get_top_3_movies_per_genre(title_basics_df, title_ratings_df):
+    movies_with_ratings = title_basics_df \
+        .filter(col("titleType") == "movie") \
+        .join(title_ratings_df, "tconst") \
+        .withColumn("genre", explode(col("genres")))
+
+    window_spec = Window.partitionBy("genre").orderBy(col("averageRating").desc())
+
+    top_3_movies = movies_with_ratings \
+        .withColumn("rank", row_number().over(window_spec)) \
+        .filter(col("rank") <= 3) \
+        .select("genre", "primaryTitle", "averageRating", "rank") \
+        .orderBy("genre", "rank")
+    
+    top_3_movies.show(truncate=False)
+    return top_3_movies
+
+
+def get_top_actors_by_high_rated_movies_count(title_basics_df, title_principals_df, title_ratings_df, name_basics_df):
+    movies = get_movies_list(title_basics_df)
+
+    all_movies = title_ratings_df.join(movies, "tconst")
+    high_rated_movies = all_movies.filter(col("averageRating") > 7.5)
+    
+    actor_roles = title_principals_df.filter(col("category") == "actor").join(all_movies, "tconst")
+    high_rated_actor_roles = title_principals_df.filter(col("category") == "actor").join(high_rated_movies, "tconst")
+
+    high_rated_movie_counts = high_rated_actor_roles \
+        .groupBy("nconst") \
+        .agg(
+            count("tconst").alias("high_rated_movie_count")
+        )
+    total_movie_counts = actor_roles \
+        .groupBy("nconst") \
+        .agg(
+            count("tconst").alias("total_movie_count"),  
+            avg("averageRating").alias("avg_total_movie_rating")  
+        )
+    
+    actor_movie_summary = high_rated_movie_counts \
+        .join(total_movie_counts, "nconst") \
+        .join(name_basics_df, "nconst") \
+        .select(
+            "primaryName", 
+            "high_rated_movie_count", 
+            "total_movie_count", 
+            "avg_total_movie_rating"
+        ) \
+        .orderBy(col("high_rated_movie_count").desc())  
+    actor_movie_summary.show(truncate=False)
+    return actor_movie_summary
+
+
+def get_episodes_summary_per_season(title_episode_df, title_ratings_df, title_basics_df): 
+    episodes_with_ratings = title_episode_df.join(title_ratings_df, "tconst", how="left")    
+    season_summary = episodes_with_ratings \
+        .join(title_basics_df, episodes_with_ratings["parentTconst"] == title_basics_df["tconst"], how="left") \
+        .select("parentTconst", "primaryTitle", "seasonNumber",  episodes_with_ratings["tconst"], "averageRating") \
+        .groupBy("parentTconst", "primaryTitle", "seasonNumber") \
+        .agg(
+            count( episodes_with_ratings["tconst"]).alias("total_episodes"),
+            avg("averageRating").alias("avg_season_rating")
+        ) \
+        .orderBy("parentTconst", "seasonNumber")
+    
+    season_summary.show(truncate=False)
+    return season_summary
+
+
+def get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df):
+    movies_with_ratings = title_basics_df \
+        .filter(col("titleType") == "movie") \
+        .join(title_ratings_df, "tconst") \
+        .withColumn("genre", explode(col("genres"))) \
+        .filter(F.col("runtimeMinutes").isNotNull())
+
+    window_spec = Window.partitionBy("genre").orderBy(col("averageRating").desc())
+
+    top_movies = movies_with_ratings \
+        .withColumn("rank", row_number().over(window_spec)) \
+        .filter(col("rank") == 1) \
+        .select("genre", "runtimeMinutes", "averageRating")
+    
+    top_movies.show(truncate=False)
+    return top_movies
+
+
 def find_man_in_characters(title_principals_df: DataFrame) -> DataFrame:
 
     man_characters_df = title_principals_df.filter(
@@ -242,6 +375,7 @@ def find_man_in_characters(title_principals_df: DataFrame) -> DataFrame:
     man_characters_df.show(5, truncate=False)
     return man_characters_df
 
+
 def count_films_per_person(title_principals_df: DataFrame) -> DataFrame:
 
     person_film_counts_df = title_principals_df.groupBy("nconst").agg(
@@ -252,6 +386,7 @@ def count_films_per_person(title_principals_df: DataFrame) -> DataFrame:
     ).orderBy(col("film_count").desc())
     person_film_counts_df.show(5)
     return person_film_counts_df
+
 
 def add_total_principals_count(title_principals_df: DataFrame) -> DataFrame:
     window_spec = Window.partitionBy("tconst")
@@ -265,6 +400,7 @@ def add_total_principals_count(title_principals_df: DataFrame) -> DataFrame:
     ).orderBy(col("tconst").asc(), col("nconst").asc()).distinct()
     principals_with_total_df.show(10, truncate=False)
     return principals_with_total_df
+
 
 def rank_principals_in_film(title_principals_df: DataFrame) -> DataFrame:
 
@@ -281,6 +417,7 @@ def rank_principals_in_film(title_principals_df: DataFrame) -> DataFrame:
     principals_ranked_df.show(10, truncate=False)
     return principals_ranked_df
 
+
 def find_films_without_writers(title_principals_df: DataFrame) -> DataFrame:
 
     writers_df = title_principals_df.filter(col("category") == "writer").select("tconst").distinct()
@@ -292,6 +429,7 @@ def find_films_without_writers(title_principals_df: DataFrame) -> DataFrame:
     ).select("tconst")
     no_writers_films_df.show(10, truncate=False)
     return no_writers_films_df
+
 
 def count_films_with_without_directors(title_principals_df: DataFrame) -> dict:
 
@@ -308,6 +446,7 @@ def count_films_with_without_directors(title_principals_df: DataFrame) -> dict:
     print(f"  Number of films with directors: {director_counts_dict['with_director']}")
     print(f"  Number of films without directors: {director_counts_dict['without_director']}")
     return director_counts_dict
+
 
 def count_entries_per_film(title_principals_df: DataFrame) -> DataFrame:
     film_entry_counts_df = title_principals_df.groupBy("tconst").agg(

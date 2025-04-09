@@ -62,3 +62,9 @@ name_basics_schema = StructType([
     StructField("primaryProfession", StringType(), True),
     StructField("knownForTitles", StringType(), True)
 ])
+
+country_codes_schema = StructType([
+    StructField("name", StringType(), True),
+    StructField("alpha_2", StringType(), True),
+    StructField("country_code", IntegerType(), True)
+])

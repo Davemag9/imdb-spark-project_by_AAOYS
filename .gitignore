@@ -1,3 +1,5 @@
 /imdb_dataset/
 /melisA/
 /venv/
+**/__pycache__/
+/src/__pycache__
