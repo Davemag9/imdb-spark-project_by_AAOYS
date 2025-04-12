@@ -244,7 +244,6 @@ def get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df
         .agg(avg("averageRating").alias("avg_rating")) \
         .orderBy(col("avg_rating").desc())
     
-    avg_rating_per_genre.show(20, truncate=False)
     return avg_rating_per_genre
 
 def get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, title_ratings_df, country_codes_df):
@@ -272,7 +271,6 @@ def get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, tit
         ) \
         .orderBy(col("movie_count").desc())
     
-    result.show(20, truncate=False)
     return result
 
 
@@ -290,7 +288,6 @@ def get_top_3_movies_per_genre(title_basics_df, title_ratings_df):
         .select("genre", "primaryTitle", "averageRating", "rank") \
         .orderBy("genre", "rank")
     
-    top_3_movies.show(20, truncate=False)
     return top_3_movies
 
 
@@ -325,7 +322,7 @@ def get_top_actors_by_high_rated_movies_count(title_basics_df, title_principals_
             "avg_total_movie_rating"
         ) \
         .orderBy(col("high_rated_movie_count").desc())  
-    actor_movie_summary.show(20, truncate=False)
+    
     return actor_movie_summary
 
 
@@ -341,7 +338,6 @@ def get_episodes_summary_per_season(title_episode_df, title_ratings_df, title_ba
         ) \
         .orderBy("parentTconst", col("seasonNumber").cast("int").asc_nulls_last()) 
     
-    season_summary.show(20, truncate=False)
     return season_summary
 
 
@@ -359,7 +355,6 @@ def get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df):
         .filter(col("rank") == 1) \
         .select("genre", "runtimeMinutes", "averageRating")
     
-    top_movies.show(20, truncate=False)
     return top_movies
 
 
