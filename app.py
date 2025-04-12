@@ -48,12 +48,12 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 # get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df)
 
 #ANASTASIA
-# get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df)
-# get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, title_ratings_df, country_codes_df)
-# get_top_3_movies_per_genre(title_basics_df, title_ratings_df)
-# get_top_actors_by_high_rated_movies_count(title_basics_df, title_principals_df, title_ratings_df, name_basics_df)
-# get_episodes_summary_per_season(title_episode_df, title_ratings_df, title_basics_df)
-# get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df)
+# op_genres_by_avg_rating_last_10_years_df = get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df)
+# top_countries_with_high_rated_movies_df = get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, title_ratings_df, country_codes_df)
+# top_3_movies_per_genre_df = get_top_3_movies_per_genre(title_basics_df, title_ratings_df)
+# top_actors_by_high_rated_movies_count_df = get_top_actors_by_high_rated_movies_count(title_basics_df, title_principals_df, title_ratings_df, name_basics_df)
+# episodes_summary_per_season_df = get_episodes_summary_per_season(title_episode_df, title_ratings_df, title_basics_df)
+# top_movies_runtime_per_genre_df = get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df)
                                          
 #OLEH
 # directors_worked_with_Hanks_df = get_directors_worked_with_Hanks(name_basics_df, title_principals_df, title_basics_df, title_crew_df) # 2m
@@ -76,6 +76,12 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 #ALINA
 
 #ANASTASIA
+# write_data_to_csv(top_genres_by_avg_rating_last_10_years_df, "./results/top_genres_by_avg_rating_last_10_years.csv")
+# write_data_to_csv(top_countries_with_high_rated_movies_df, "./results/top_countries_with_high_rated_movies.csv")
+# write_data_to_csv(top_3_movies_per_genre_df, "./results/top_3_movies_per_genre.csv")
+# write_data_to_csv(top_actors_by_high_rated_movies_count_df, "./results/top_actors_by_high_rated_movies_count.csv")
+# write_data_to_csv(get_episodes_summary_per_season_df, "./results/get_episodes_summary_per_season.csv")
+# write_data_to_csv(top_movies_runtime_per_genre_df, "./results/top_movies_runtime_per_genre.csv")
 
 #OLEH
 # write_data_to_csv(directors_worked_with_Hanks_df, "./results/directors_worked_with_Hanks.csv")

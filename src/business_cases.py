@@ -1,7 +1,7 @@
 from datetime import datetime
 from pyspark.sql import functions as F, Window
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import explode, count, col, row_number, avg, lower, rank
+from pyspark.sql.functions import explode, count, col, row_number, avg, lower, rank, round
 from src.get_services import get_id_by_name, get_films_by_actor, get_movies_list, get_movies_after_year
 
 
@@ -272,7 +272,7 @@ def get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, tit
         ) \
         .orderBy(col("movie_count").desc())
     
-    result.show(truncate=False)
+    result.show(20, truncate=False)
     return result
 
 
@@ -290,7 +290,7 @@ def get_top_3_movies_per_genre(title_basics_df, title_ratings_df):
         .select("genre", "primaryTitle", "averageRating", "rank") \
         .orderBy("genre", "rank")
     
-    top_3_movies.show(truncate=False)
+    top_3_movies.show(20, truncate=False)
     return top_3_movies
 
 
@@ -325,7 +325,7 @@ def get_top_actors_by_high_rated_movies_count(title_basics_df, title_principals_
             "avg_total_movie_rating"
         ) \
         .orderBy(col("high_rated_movie_count").desc())  
-    actor_movie_summary.show(truncate=False)
+    actor_movie_summary.show(20, truncate=False)
     return actor_movie_summary
 
 
@@ -336,12 +336,12 @@ def get_episodes_summary_per_season(title_episode_df, title_ratings_df, title_ba
         .select("parentTconst", "primaryTitle", "seasonNumber",  episodes_with_ratings["tconst"], "averageRating") \
         .groupBy("parentTconst", "primaryTitle", "seasonNumber") \
         .agg(
-            count( episodes_with_ratings["tconst"]).alias("total_episodes"),
-            avg("averageRating").alias("avg_season_rating")
+            count(episodes_with_ratings["tconst"]).alias("total_episodes"),
+            round(avg("averageRating"), 2).alias("avg_season_rating")
         ) \
-        .orderBy("parentTconst", "seasonNumber")
+        .orderBy("parentTconst", col("seasonNumber").cast("int").asc_nulls_last()) 
     
-    season_summary.show(truncate=False)
+    season_summary.show(20, truncate=False)
     return season_summary
 
 
@@ -359,7 +359,7 @@ def get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df):
         .filter(col("rank") == 1) \
         .select("genre", "runtimeMinutes", "averageRating")
     
-    top_movies.show(truncate=False)
+    top_movies.show(20, truncate=False)
     return top_movies
 
 
