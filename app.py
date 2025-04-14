@@ -64,13 +64,13 @@ top_movies_runtime_per_genre_df = get_top_movies_runtime_per_genre(title_basics_
 # most_productive_writers_df = get_most_productive_writers(title_basics_df, title_crew_df, name_basics_df) # 2m
 
 #YURA
-# find_man_in_characters(title_principals_df)
-# count_films_per_person(title_principals_df)
-# add_total_principals_count(title_principals_df)
-# rank_principals_in_film(title_principals_df)
-# find_films_without_writers(title_principals_df)
-# count_films_with_without_directors(title_principals_df)
-# count_entries_per_film(title_principals_df)
+man_in_characters_df = find_man_in_characters(title_principals_df)
+films_per_person_df = count_films_per_person(title_principals_df)
+total_principals_count_df = add_total_principals_count(title_principals_df)
+principals_in_film_df = rank_principals_in_film(title_principals_df)
+films_without_writers_df = find_films_without_writers(title_principals_df)
+films_with_without_directors_df = count_films_with_without_directors(title_principals_df)
+entries_per_film_df = count_entries_per_film(title_principals_df)
 
 # write data to csv
 #ALINA
@@ -98,5 +98,12 @@ write_data_to_csv(top_movies_runtime_per_genre_df, "./results/top_movies_runtime
 # write_data_to_csv(most_productive_writers_df, "./results/most_productive_writers.csv")
 
 #YURA
+write_data_to_csv(man_in_characters_df, "./results/man_in_characters.csv")
+write_data_to_csv(films_per_person_df, "./results/films_per_person.csv")
+write_data_to_csv(total_principals_count_df, "./results/total_principals_count.csv")
+write_data_to_csv(principals_in_film_df, "./results/principals_in_film.csv")
+write_data_to_csv(films_with_without_directors_df, "./results/films_with_without_directors.csv")
+write_data_to_csv(entries_per_film_df, "./results/entries_per_film.csv")
+write_data_to_csv(films_without_writers_df, "./results/films_without_writers.csv")
 
 clear_all_cache(spark)
