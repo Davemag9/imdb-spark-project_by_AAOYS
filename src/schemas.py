@@ -1,14 +1,14 @@
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType, BooleanType
 
 title_ratings_schema = StructType([
-        StructField("tconst", StringType(), True),
+        StructField("tconst", StringType(), False),
         StructField("averageRating", DoubleType(), True),
         StructField("numVotes", IntegerType(), True)
     ])
 
 
 title_episode_schema = StructType([
-        StructField("tconst", StringType(), True),
+        StructField("tconst", StringType(), False),
         StructField("parentTconst", StringType(), True),
         StructField("seasonNumber", StringType(), True),
         StructField("episodeNumber", StringType(), True)
@@ -26,7 +26,7 @@ title_akas_schema = StructType([
 ])
 
 title_crew_schema = StructType([
-    StructField("tconst", StringType(), True),
+    StructField("tconst", StringType(), False),
     StructField("directors", StringType(), True),
     StructField("writers", StringType(), True)
 ])
