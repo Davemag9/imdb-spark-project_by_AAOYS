@@ -1,14 +1,14 @@
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType, BooleanType
 
 title_ratings_schema = StructType([
-        StructField("tconst", StringType(), True),
+        StructField("tconst", StringType(), False),
         StructField("averageRating", DoubleType(), True),
         StructField("numVotes", IntegerType(), True)
     ])
 
 
 title_episode_schema = StructType([
-        StructField("tconst", StringType(), True),
+        StructField("tconst", StringType(), False),
         StructField("parentTconst", StringType(), True),
         StructField("seasonNumber", StringType(), True),
         StructField("episodeNumber", StringType(), True)
@@ -20,13 +20,13 @@ title_akas_schema = StructType([
     StructField("title", StringType(), True),
     StructField("region", StringType(), True),
     StructField("language", StringType(), True),
-    StructField("types", StringType(), True),       # буде строка з комами → можна потім розбити
-    StructField("attributes", StringType(), True),  # те ж саме
+    StructField("types", StringType(), True),
+    StructField("attributes", StringType(), True),
     StructField("isOriginalTitle", StringType(), True)
 ])
 
 title_crew_schema = StructType([
-    StructField("tconst", StringType(), True),
+    StructField("tconst", StringType(), False),
     StructField("directors", StringType(), True),
     StructField("writers", StringType(), True)
 ])
@@ -61,4 +61,10 @@ name_basics_schema = StructType([
     StructField("deathYear", IntegerType(), True),
     StructField("primaryProfession", StringType(), True),
     StructField("knownForTitles", StringType(), True)
+])
+
+country_codes_schema = StructType([
+    StructField("name", StringType(), True),
+    StructField("alpha_2", StringType(), True),
+    StructField("country_code", IntegerType(), True)
 ])
