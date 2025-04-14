@@ -43,20 +43,15 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 
 # business cases
 #ALINA
-# long_high_rated_movies_df = get_long_high_rated_movies(title_basics_df, title_ratings_df)
-# successful_directors_df = get_successful_directors(name_basics_df, title_basics_df, title_ratings_df, title_crew_df)
-# avg_runtime_by_genre_df = get_avg_runtime_by_genre(title_basics_df)
-# count_good_movies_by_year_df = count_good_movies_by_year(title_basics_df, title_ratings_df)
-# bottom_3_by_year_df = get_bottom_3_by_year(title_basics_df, title_ratings_df)
-# actors_with_strong_debut_df = get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df)
+# long_high_rated_movie?but_df = get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df)
 
 #ANASTASIIA
-# top_genres_by_avg_rating_last_10_years_df = get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df)
-# top_countries_with_high_rated_movies_df = get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, title_ratings_df, country_codes_df)
-# top_3_movies_per_genre_df = get_top_3_movies_per_genre(title_basics_df, title_ratings_df)
-# top_actors_by_high_rated_movies_count_df = get_top_actors_by_high_rated_movies_count(title_basics_df, title_principals_df, title_ratings_df, name_basics_df)
-# episodes_summary_per_season_df = get_episodes_summary_per_season(title_episode_df, title_ratings_df, title_basics_df)
-# top_movies_runtime_per_genre_df = get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df)
+top_genres_by_avg_rating_last_10_years_df = get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df)
+top_countries_with_high_rated_movies_df = get_top_countries_with_high_rated_movies(title_basics_df, title_akas_df, title_ratings_df, country_codes_df)
+top_3_movies_per_genre_df = get_top_3_movies_per_genre(title_basics_df, title_ratings_df)
+top_actors_by_high_rated_movies_count_df = get_top_actors_by_high_rated_movies_count(title_basics_df, title_principals_df, title_ratings_df, name_basics_df)
+episodes_summary_per_season_df = get_episodes_summary_per_season(title_episode_df, title_ratings_df, title_basics_df)
+top_movies_runtime_per_genre_df = get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df)
 
 # show_data_summary(top_genres_by_avg_rating_last_10_years_df, "Top_genres_by_avg_rating_last_10_years_df")    
                                    
@@ -69,30 +64,30 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 # most_productive_writers_df = get_most_productive_writers(title_basics_df, title_crew_df, name_basics_df) # 2m
 
 #YURA
-# find_man_in_characters(title_principals_df)
-# count_films_per_person(title_principals_df)
-# add_total_principals_count(title_principals_df)
-# rank_principals_in_film(title_principals_df)
-# find_films_without_writers(title_principals_df)
-# count_films_with_without_directors(title_principals_df)
-# count_entries_per_film(title_principals_df)
+man_in_characters_df = find_man_in_characters(title_principals_df)
+films_per_person_df = count_films_per_person(title_principals_df)
+total_principals_count_df = add_total_principals_count(title_principals_df)
+principals_in_film_df = rank_principals_in_film(title_principals_df)
+films_without_writers_df = find_films_without_writers(title_principals_df)
+films_with_without_directors_df = count_films_with_without_directors(title_principals_df)
+entries_per_film_df = count_entries_per_film(title_principals_df)
 
 # write data to csv
 #ALINA
-# write_data_to_csv(long_high_rated_movies_df, "./results/long_high_rated_movies.csv")
-# write_data_to_csv(successful_directors_df, "./results/successful_directors.csv")
-# write_data_to_csv(avg_runtime_by_genre_df, "./results/avg_runtime_by_genre.csv")
-# write_data_to_csv(count_good_movies_by_year_df, "./results/count_good_movies_by_year.csv")
-# write_data_to_csv(bottom_3_by_year_df, "./results/bottom_3_by_year.csv")
-# write_data_to_csv(actors_with_strong_debut_df, "./results/actors_with_strong_debut.csv")
+write_data_to_csv(long_high_rated_movies_df, "./results/long_high_rated_movies.csv")
+write_data_to_csv(successful_directors_df, "./results/successful_directors.csv")
+write_data_to_csv(avg_runtime_by_genre_df, "./results/avg_runtime_by_genre.csv")
+write_data_to_csv(count_good_movies_by_year_df, "./results/count_good_movies_by_year.csv")
+write_data_to_csv(bottom_3_by_year_df, "./results/bottom_3_by_year.csv")
+write_data_to_csv(actors_with_strong_debut_df, "./results/actors_with_strong_debut.csv")
 
 #ANASTASIIA
-# write_data_to_csv(top_genres_by_avg_rating_last_10_years_df, "./results/top_genres_by_avg_rating_last_10_years.csv")
-# write_data_to_csv(top_countries_with_high_rated_movies_df, "./results/top_countries_with_high_rated_movies.csv")
-# write_data_to_csv(top_3_movies_per_genre_df, "./results/top_3_movies_per_genre.csv")
-# write_data_to_csv(top_actors_by_high_rated_movies_count_df, "./results/top_actors_by_high_rated_movies_count.csv")
-# write_data_to_csv(get_episodes_summary_per_season_df, "./results/get_episodes_summary_per_season.csv")
-# write_data_to_csv(top_movies_runtime_per_genre_df, "./results/top_movies_runtime_per_genre.csv")
+write_data_to_csv(top_genres_by_avg_rating_last_10_years_df, "./results/top_genres_by_avg_rating_last_10_years.csv")
+write_data_to_csv(top_countries_with_high_rated_movies_df, "./results/top_countries_with_high_rated_movies.csv")
+write_data_to_csv(top_3_movies_per_genre_df, "./results/top_3_movies_per_genre.csv")
+write_data_to_csv(top_actors_by_high_rated_movies_count_df, "./results/top_actors_by_high_rated_movies_count.csv")
+write_data_to_csv(episodes_summary_per_season_df, "./results/get_episodes_summary_per_season.csv")
+write_data_to_csv(top_movies_runtime_per_genre_df, "./results/top_movies_runtime_per_genre.csv")
 
 #OLEH
 # write_data_to_csv(directors_worked_with_Hanks_df, "./results/directors_worked_with_Hanks.csv")
@@ -103,5 +98,12 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 # write_data_to_csv(most_productive_writers_df, "./results/most_productive_writers.csv")
 
 #YURA
+write_data_to_csv(man_in_characters_df, "./results/man_in_characters.csv")
+write_data_to_csv(films_per_person_df, "./results/films_per_person.csv")
+write_data_to_csv(total_principals_count_df, "./results/total_principals_count.csv")
+write_data_to_csv(principals_in_film_df, "./results/principals_in_film.csv")
+write_data_to_csv(films_with_without_directors_df, "./results/films_with_without_directors.csv")
+write_data_to_csv(entries_per_film_df, "./results/entries_per_film.csv")
+write_data_to_csv(films_without_writers_df, "./results/films_without_writers.csv")
 
 clear_all_cache(spark)
