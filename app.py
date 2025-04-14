@@ -91,7 +91,7 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 # write_data_to_csv(top_countries_with_high_rated_movies_df, "./results/top_countries_with_high_rated_movies.csv")
 # write_data_to_csv(top_3_movies_per_genre_df, "./results/top_3_movies_per_genre.csv")
 # write_data_to_csv(top_actors_by_high_rated_movies_count_df, "./results/top_actors_by_high_rated_movies_count.csv")
-# write_data_to_csv(get_episodes_summary_per_season_df, "./results/get_episodes_summary_per_season.csv")
+# write_data_to_csv(episodes_summary_per_season_df, "./results/get_episodes_summary_per_season.csv")
 # write_data_to_csv(top_movies_runtime_per_genre_df, "./results/top_movies_runtime_per_genre.csv")
 
 #OLEH
