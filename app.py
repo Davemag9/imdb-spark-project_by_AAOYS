@@ -65,12 +65,12 @@ top_movies_runtime_per_genre_df = get_top_movies_runtime_per_genre(title_basics_
 
 #YURA
 man_in_characters_df = find_man_in_characters(title_principals_df)
-films_per_person_df = count_films_per_person(title_principals_df)
-total_principals_count_df = add_total_principals_count(title_principals_df)
-principals_in_film_df = rank_principals_in_film(title_principals_df)
-films_without_writers_df = find_films_without_writers(title_principals_df)
+films_per_person_df = count_films_per_person(title_principals_df, title_basics_df, name_basics_df)
+total_principals_count_df = add_total_principals_count(title_principals_df, title_basics_df, name_basics_df)
+principals_in_film_df = rank_principals_in_film(title_principals_df, title_basics_df, name_basics_df)
+films_without_writers_df = find_films_without_writers(title_principals_df, title_basics_df)
 films_with_without_directors_df = count_films_with_without_directors(title_principals_df)
-entries_per_film_df = count_entries_per_film(title_principals_df)
+entries_per_film_df = count_entries_per_film(title_principals_df, title_basics_df)
 
 # write data to csv
 #ALINA
