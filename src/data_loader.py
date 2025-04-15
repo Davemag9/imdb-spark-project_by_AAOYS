@@ -41,7 +41,21 @@ def show_data_summary(df, df_name="DataFrame", extended_stats=False):
         else:
             print("No numeric columns found in the DataFrame.")
 
-        missing_values = df.select([F.count(F.when(F.col(c).isNull(), c)).alias(c) for c in df.columns])
+        missing_exprs = []
+        for c in df.columns:
+            dtype_str = df.schema[c].dataType.simpleString()
+
+            if dtype_str.startswith("array"):
+                col_expr = F.col(c).isNull() | (F.col(c) == F.array(F.lit('\\N')))
+            else:
+                col_expr = F.col(c).isNull() | (F.col(c) == '\\N') | (F.col(c) == '')
+
+                if dtype_str in ['int', 'bigint', 'double']:
+                    col_expr = col_expr | (F.col(c) == -1)
+
+            missing_exprs.append(F.count(F.when(col_expr, c)).alias(c))
+
+        missing_values = df.select(missing_exprs)
         print("\nMissing values per column:")
         missing_values.show(truncate=False)
         

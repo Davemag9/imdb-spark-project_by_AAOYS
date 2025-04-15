@@ -1,9 +1,8 @@
 from datetime import datetime
 from pyspark.sql import functions as F, Window
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import explode, count, col, row_number, avg, lower, rank, round
+from pyspark.sql.functions import explode, count, col, row_number, avg, lower, rank, round, countDistinct, rlike
 from src.get_services import get_id_by_name, get_films_by_actor, get_movies_list, get_movies_after_year
-
 
 def get_directors_worked_with_Hanks(name_basics_df, title_principals_df, title_basics_df, title_crew_df):
     tom_hanks_id = get_id_by_name("Tom Hanks", name_basics_df)
@@ -148,19 +147,22 @@ def get_long_high_rated_movies(title_basics_df, title_ratings_df):
 
 
 def get_successful_directors(name_basics_df, title_basics_df, title_ratings_df, title_crew_df):
+    from pyspark.sql.functions import col, explode
+
     high_rated = title_basics_df.join(title_ratings_df, "tconst") \
         .filter((col("startYear") > 2010) & (col("averageRating") > 8)) \
-        .select("tconst")
+        .select("tconst", "primaryTitle", "startYear", "averageRating")
 
-    director_ids = high_rated.join(title_crew_df, "tconst") \
-        .withColumn("director_id", explode(col("directors"))) \
-        .select("director_id").distinct()
+    with_directors = high_rated.join(title_crew_df, "tconst") \
+        .withColumn("director_id", explode(col("directors")))
 
-    result = director_ids.join(name_basics_df, col("director_id") == col("nconst")) \
-        .select("primaryName").distinct()
+    result = with_directors.join(name_basics_df, col("director_id") == col("nconst")) \
+        .select("primaryName", "primaryTitle", "startYear", "averageRating") \
+        .orderBy(col("averageRating").desc())
 
-    result.show(10, truncate=False)
+    result.show(20, truncate=False)
     return result
+
 
 
 def get_avg_runtime_by_genre(title_basics_df):
@@ -365,70 +367,147 @@ def get_top_movies_runtime_per_genre(title_basics_df, title_ratings_df):
 
 def find_man_in_characters(title_principals_df: DataFrame) -> DataFrame:
 
+    word_pattern = "\\bman\\b"
+
     man_characters_df = title_principals_df.filter(
-        col("characters").isNotNull() & lower(col("characters")).like("%man%")
+        col("characters").isNotNull() &
+        lower(col("characters")).rlike(word_pattern)
     ).select(
-        "tconst",
-        "nconst",
-        "characters"
+        col("tconst").alias("Film id"),
+        col("characters").alias("Film name")
     )
-    man_characters_df.show(5, truncate=False)
+
+    man_characters_df.show(30, truncate=False)
     return man_characters_df
 
 
-def count_films_per_person(title_principals_df: DataFrame) -> DataFrame:
 
-    person_film_counts_df = title_principals_df.groupBy("nconst").agg(
-        count("tconst").alias("film_count")
-    ).select(
-        "nconst",
-        "film_count"
-    ).orderBy(col("film_count").desc())
-    person_film_counts_df.show(5)
-    return person_film_counts_df
+def count_films_per_person(title_principals_df: DataFrame, title_basics_df: DataFrame, name_basics_df: DataFrame) -> DataFrame:
 
+    allowed_types = ["movie", "tvMovie", "tvSeries", "tvMiniSeries"]
+    filtered_basics = title_basics_df.filter(col("titleType").isin(allowed_types)) \
+                                     .select("tconst")
 
-def add_total_principals_count(title_principals_df: DataFrame) -> DataFrame:
-    window_spec = Window.partitionBy("tconst")
-    principals_with_total_df = title_principals_df.withColumn(
-        "total_entries_in_film",
-        count("*").over(window_spec)
-    ).select(
+    principals_of_allowed_titles = title_principals_df.join(
+        filtered_basics,
         "tconst",
+        "inner"
+    )
+    person_film_counts_grouped_df = principals_of_allowed_titles.groupBy("nconst").agg(
+        countDistinct("tconst").alias("film_count")
+    )
+    names_df = name_basics_df.select("nconst", "primaryName")
+    person_counts_with_names_df = person_film_counts_grouped_df.join(
+        names_df,
         "nconst",
-        "total_entries_in_film"
-    ).orderBy(col("tconst").asc(), col("nconst").asc()).distinct()
-    principals_with_total_df.show(10, truncate=False)
-    return principals_with_total_df
+        "inner"
+    )
+    final_df = person_counts_with_names_df.select(
+        col("nconst").alias("person"),
+        col("primaryName").alias("Name"),
+        col("film_count")
+    ).orderBy(col("film_count").desc())
+
+    final_df.show(30)
+    return final_df
 
 
-def rank_principals_in_film(title_principals_df: DataFrame) -> DataFrame:
+def add_total_principals_count(title_principals_df: DataFrame, title_basics_df: DataFrame, name_basics_df: DataFrame) -> DataFrame:
+    unique_counts_per_film_df = title_principals_df.groupBy("tconst").agg(
+        countDistinct("nconst").alias("unique_participant_count")
+    )
+    unique_principals_df = title_principals_df.select("tconst", "nconst").distinct()
+    principals_with_count_df = unique_principals_df.join(
+        unique_counts_per_film_df,
+        "tconst",
+        "inner"
+    )
+    basics_titles_df = title_basics_df.select("tconst", "primaryTitle")
+    joined_with_titles = principals_with_count_df.join(
+        basics_titles_df,
+        "tconst",
+        "inner"
+    )
+    names_df = name_basics_df.select("nconst", "primaryName")
+    fully_joined_df = joined_with_titles.join(
+        names_df,
+        "nconst",
+        "inner"
+    )
+    final_df = fully_joined_df.select(
+        col("tconst").alias("Film"),
+        col("primaryTitle").alias("Title"),
+        col("nconst").alias("Participant"),
+        col("unique_participant_count").alias("Unique Participant Count")
+    ).orderBy(
+        col("Film").asc(),
+        col("Participant").asc()
+    )
+    final_df.show(30, truncate=False)
+    return final_df
 
+def rank_principals_in_film(title_principals_df: DataFrame, title_basics_df: DataFrame, name_basics_df: DataFrame) -> DataFrame:
     window_rank_in_film = Window.partitionBy("tconst").orderBy("ordering")
     principals_ranked_df = title_principals_df.withColumn(
         "rank_in_film",
         rank().over(window_rank_in_film)
-    ).select(
+    )
+    basics_titles_df = title_basics_df.select(
+        col("tconst"),
+        col("primaryTitle")
+    )
+    joined_with_titles = principals_ranked_df.join(
+        basics_titles_df,
         "tconst",
+        "inner"
+    )
+    names_df = name_basics_df.select(
+        col("nconst"),
+        col("primaryName")
+    )
+    fully_joined_df = joined_with_titles.join(
+        names_df,
         "nconst",
-        "category",
-        "rank_in_film"
-    ).orderBy(col("tconst").asc(), col("rank_in_film").asc())
-    principals_ranked_df.show(10, truncate=False)
-    return principals_ranked_df
+        "inner"
+    )
+    final_ranked_df = fully_joined_df.select(
+        col("tconst").alias("Film"),
+        col("primaryTitle").alias("Title"),
+        col("nconst").alias("Participant"),
+        col("primaryName").alias("Name"),
+        col("category").alias("Category"),
+        col("rank_in_film").alias("Rank"),
+    ).orderBy(
+        col("Film").asc(),
+        col("Rank").asc()
+    )
+    final_ranked_df.show(30, truncate=False)
+    return final_ranked_df
 
 
-def find_films_without_writers(title_principals_df: DataFrame) -> DataFrame:
-
-    writers_df = title_principals_df.filter(col("category") == "writer").select("tconst").distinct()
-    all_films_df = title_principals_df.select("tconst").distinct()
-    no_writers_films_df = all_films_df.join(
+def find_films_without_writers(title_principals_df: DataFrame, title_basics_df: DataFrame) -> DataFrame:
+    writers_df = title_principals_df.filter(col("category") == "writer") \
+        .select("tconst") \
+        .distinct()
+    all_films_in_principals_df = title_principals_df.select("tconst").distinct()
+    films_without_writers_tconst_df = all_films_in_principals_df.join(
         writers_df,
         on="tconst",
         how="left_anti"
-    ).select("tconst")
-    no_writers_films_df.show(10, truncate=False)
-    return no_writers_films_df
+    )
+    basics_titles_df = title_basics_df.select("tconst", "primaryTitle")
+    no_writers_with_titles_df = films_without_writers_tconst_df.join(
+        basics_titles_df,
+        on="tconst",
+        how="inner"
+
+    )
+    final_df = no_writers_with_titles_df.select(
+        col("tconst").alias("Film"),
+        col("primaryTitle").alias("Title")
+    )
+    final_df.show(30, truncate=False)
+    return final_df
 
 
 def count_films_with_without_directors(title_principals_df: DataFrame) -> dict:
@@ -448,14 +527,23 @@ def count_films_with_without_directors(title_principals_df: DataFrame) -> dict:
     return director_counts_dict
 
 
-def count_entries_per_film(title_principals_df: DataFrame) -> DataFrame:
-    film_entry_counts_df = title_principals_df.groupBy("tconst").agg(
+def count_entries_per_film(title_principals_df: DataFrame, title_basics_df: DataFrame) -> DataFrame:
+    film_entry_counts_grouped_df = title_principals_df.groupBy("tconst").agg(
         count("*").alias("entry_count")
-    ).select(
+    )
+    basics_titles_df = title_basics_df.select("tconst", "primaryTitle")
+    film_counts_with_titles_df = film_entry_counts_grouped_df.join(
+        basics_titles_df,
         "tconst",
-        "entry_count"
-    ).orderBy(col("entry_count").desc())
-    film_entry_counts_df.show(10, truncate=False)
-    return film_entry_counts_df
+        "inner"
+    )
+    final_df = film_counts_with_titles_df.select(
+        col("tconst").alias("Film"),
+        col("primaryTitle").alias("Title"),
+        col("entry_count").alias("Entry count")
+    ).orderBy(col("Entry count").desc())
+
+    final_df.show(30, truncate=False)
+    return final_df
 
 
