@@ -76,19 +76,24 @@ def get_most_common_actor_pairs(title_principals_df, title_basics_df, name_basic
 def get_top_lead_actors_after_2000(title_principals_df, title_basics_df, name_basics_df):
     movies_after_2000 = get_movies_after_year(2000, title_basics_df)
 
-    lead_roles = title_principals_df \
+    joined_df = title_principals_df \
         .filter(col("category").isin("actor", "actress")) \
         .filter(col("ordering") == 1) \
-        .join(movies_after_2000, "tconst") \
-        .groupBy("nconst") \
+        .join(movies_after_2000, "tconst")
+
+    lead_roles_count = joined_df.groupBy("nconst") \
         .agg(count("*").alias("lead_roles_count"))
 
-    result = lead_roles \
-        .join(name_basics_df, "nconst") \
-        .select("primaryName", "lead_roles_count") \
-        .orderBy(col("lead_roles_count").desc())
+    full_info = lead_roles_count.join(name_basics_df, "nconst")
+    window_spec = Window.orderBy(col("lead_roles_count").desc())
 
-    result.show(10, truncate=False)
+    result = full_info \
+        .withColumn("rank", row_number().over(window_spec)) \
+        .filter(col("rank") <= 10) \
+        .select("primaryName", "lead_roles_count", "rank") \
+        .orderBy("rank")
+
+    result.show(truncate=False)
     return result
 
 
