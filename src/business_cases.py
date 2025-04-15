@@ -138,28 +138,24 @@ def get_long_high_rated_movies(title_basics_df, title_ratings_df):
         .select("primaryTitle", "startYear", "runtimeMinutes", "averageRating") \
         .orderBy(col("averageRating").desc())
 
-    result.show(20, truncate=False)
+    result.show(30, truncate=False)
     return result
 
 
 def get_successful_directors(name_basics_df, title_basics_df, title_ratings_df, title_crew_df):
-    from pyspark.sql.functions import col, explode
-
     high_rated = title_basics_df.join(title_ratings_df, "tconst") \
         .filter((col("startYear") > 2010) & (col("averageRating") > 8)) \
-        .select("tconst", "primaryTitle", "startYear", "averageRating")
+        .select("tconst")
 
-    with_directors = high_rated.join(title_crew_df, "tconst") \
-        .withColumn("director_id", explode(col("directors")))
+    director_ids = high_rated.join(title_crew_df, "tconst") \
+        .withColumn("director_id", explode(col("directors"))) \
+        .select("director_id").distinct()
 
-    result = with_directors.join(name_basics_df, col("director_id") == col("nconst")) \
-        .select("primaryName", "primaryTitle", "startYear", "averageRating") \
-        .orderBy(col("averageRating").desc())
+    result = director_ids.join(name_basics_df, col("director_id") == col("nconst")) \
+        .select("primaryName").distinct()
 
-    result.show(20, truncate=False)
+    result.show(10, truncate=False)
     return result
-
-
 
 
 def get_avg_runtime_by_genre(title_basics_df):
@@ -170,7 +166,7 @@ def get_avg_runtime_by_genre(title_basics_df):
         .agg(avg(col("runtimeMinutes")).alias("avg_runtime")) \
         .orderBy(col("avg_runtime").desc())
 
-    result.show(20, truncate=False)
+    result.show(truncate=False)
     return result
 
 
@@ -181,7 +177,7 @@ def count_good_movies_by_year(title_basics_df, title_ratings_df):
         .count() \
         .orderBy("startYear")
 
-    result.show(20, truncate=False)
+    result.show(truncate=False)
     return result
 
 
@@ -211,7 +207,7 @@ def get_bottom_3_by_year(title_basics_df, title_ratings_df):
         .select("startYear", "primaryTitle", "averageRating", "numVotes") \
         .orderBy("startYear", "rank")
 
-    result.show(20, truncate=False)
+    result.show(50, truncate=False)
     return result
 
 
@@ -231,7 +227,7 @@ def get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basi
         .select("primaryName", "primaryTitle", "startYear", "averageRating") \
         .orderBy(col("averageRating").desc())
 
-    debut.show(20, truncate=False)
+    debut.show(50, truncate=False)
     return debut
 
 def get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df):
