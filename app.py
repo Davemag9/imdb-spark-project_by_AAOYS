@@ -43,7 +43,12 @@ title_akas_df = title_akas_df.withColumn("attributes", split(title_akas_df["attr
 
 # business cases
 #ALINA
-# long_high_rated_movie?but_df = get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df)
+long_high_rated_movies_df = get_long_high_rated_movies(title_basics_df, title_ratings_df)
+successful_directors_df = get_successful_directors(name_basics_df, title_basics_df, title_ratings_df, title_crew_df)
+avg_runtime_by_genre_df = get_avg_runtime_by_genre(title_basics_df)
+count_good_movies_by_year_df = count_good_movies_by_year(title_basics_df, title_ratings_df)
+bottom_3_by_year_df = get_bottom_3_by_year(title_basics_df, title_ratings_df)
+actors_with_strong_debut_df = get_actors_with_strong_debut(name_basics_df, title_principals_df, title_basics_df, title_ratings_df)
 
 #ANASTASIIA
 top_genres_by_avg_rating_last_10_years_df = get_top_genres_by_avg_rating_last_10_years(title_basics_df, title_ratings_df)
