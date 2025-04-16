@@ -25,14 +25,3 @@ docker build -t my-spark img .
 ```bash
 docker run my-spark-img
 ```
-
-
-
-
-1) перейти на потрібну існуючу гілку, або створити нову.
-2) Update project
-3) внести зміни в репозиторій
-4) Commit
-5) Push
-
-
